@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Becky Sue Parton | Associate Professor</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #16a085;
+            --accent-color: #e74c3c;
+            --text-color: #333333;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            color: #bdc3c7;
+            font-weight: 300;
+        }
+
+        nav {
+            background-color: #fff;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav a {
+            color: var(--primary-color);
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--secondary-color);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        section {
+            background: var(--card-bg);
+            padding: 30px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-link {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .btn-link:hover {
+            background-color: #117a65;
+        }
+
+        /* Interactive JavaScript target style */
+        .interactive-box {
+            background-color: #edf2f7;
+            border-left: 5px solid var(--primary-color);
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 0 5px 5px 0;
+        }
+
+        #welcome-message {
+            font-style: italic;
+            font-weight: 500;
+            color: var(--primary-color);
+            min-height: 25px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            margin-top: 50px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Dr. Becky Sue Parton</h1>
+        <p>Associate Professor</p>
+    </header>
+
+    <nav>
+        <a href="#about">About Me</a>
+        <a href="#research">Research & Teaching</a>
+        <a href="#capital-project">Special Project</a>
+    </nav>
+
+    <div class="container">
+        <section id="about">
+            <h2>About Me</h2>
+            <p>Welcome to my academic homepage. As an Associate Professor, I am dedicated to fostering excellence in higher education through innovative teaching, rigorous research, and active community mentorship. My work aims to bridge theoretical foundations with practical applications to empower the next generation of scholars and practitioners.</p>
+            
+            <div class="interactive-box">
+                <p id="welcome-message">Loading dynamic greeting...</p>
+            </div>
+        </section>
+
+        <section id="research">
+            <h2>Research & Teaching</h2>
+            <p>My academic interests span instructional technologies, curriculum development, and collaborative learning paradigms. I regularly teach both undergraduate and graduate level courses, mentoring students through active inquiry and empirical exploration.</p>
+        </section>
+
+        <section id="capital-project">
+            <h2>Featured Exploration</h2>
+            <p>Explore my latest specialized research module and interactive case study focusing on structural and capital analyses.</p>
+            <a href="capitalex.html" class="btn-link">View Capital Exploration (capitalex.html) &rarr;</a>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Dr. Becky Sue Parton. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Interactive Greeting based on time of day
+            const greetingElement = document.getElementById("welcome-message");
+            const currentTime = new Date();
+            const hours = currentTime.getHours();
+            let greetingText = "";
+
+            if (hours < 12) {
+                greetingText = "Good morning! Thank you for visiting my academic profile today.";
+            } else if (hours < 18) {
+                greetingText = "Good afternoon! Welcome to my academic portal.";
+            } else {
+                greetingText = "Good evening! Thank you for stopping by my website.";
+            }
+
+            greetingElement.textContent = greetingText;
+        });
+    </script>
+</body>
+</html>
