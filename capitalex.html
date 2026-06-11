@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capital Quest: US Adventure!</title>
+  <!-- Tailwind CSS for vibrant, modern styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts for a playful yet legible look -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+    }
+    .playful-title {
+      font-family: 'Fredoka One', cursive;
+    }
+    /* Bounce animation for mascot */
+    @keyframes bounce-slow {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .mascot-bounce {
+      animation: bounce-slow 3s ease-in-out infinite;
+    }
+    /* Shake animation for wrong answers */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .shake-anim {
+      animation: shake 0.4s ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 min-h-screen text-slate-800 flex flex-col justify-between">
+
+  <!-- Main Canvas for Confetti -->
+  <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50 w-full h-full"></canvas>
+
+  <!-- Top Navigation & Scoreboard -->
+  <header class="bg-white/80 backdrop-blur-md shadow-sm border-b border-indigo-100 sticky top-0 z-40 px-4 py-3">
+    <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- Logo / Title -->
+      <div class="flex items-center gap-3">
+        <div class="bg-indigo-600 text-white p-2.5 rounded-2xl shadow-md shadow-indigo-200 flex items-center justify-center">
+          <!-- Compass Logo SVG -->
+          <svg class="w-6 h-6 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl md:text-2xl playful-title text-indigo-700 tracking-wide">Capital Quest!</h1>
+          <p class="text-xs text-indigo-500 font-bold tracking-wider uppercase">US States Adventure</p>
+        </div>
+      </div>
+
+      <!-- Live Statistics -->
+      <div class="flex items-center gap-2 sm:gap-4">
+        <!-- Score Star -->
+        <div class="bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl flex items-center gap-2">
+          <span class="text-xl">⭐</span>
+          <div class="text-left">
+            <p class="text-[10px] text-amber-600 font-bold leading-none uppercase">Score</p>
+            <p id="score-val" class="font-bold text-amber-800 leading-none mt-1">0</p>
+          </div>
+        </div>
+
+        <!-- Streak Multiplier -->
+        <div id="streak-badge" class="bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl flex items-center gap-2 transition-all duration-300 scale-95 opacity-50">
+          <span class="text-xl">🔥</span>
+          <div class="text-left">
+            <p class="text-[10px] text-rose-600 font-bold leading-none uppercase">Streak</p>
+            <p id="streak-val" class="font-bold text-rose-800 leading-none mt-1">0</p>
+          </div>
+        </div>
+
+        <!-- High Score -->
+        <div class="bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl flex items-center gap-2">
+          <span class="text-xl">🏆</span>
+          <div class="text-left">
+            <p class="text-[10px] text-emerald-600 font-bold leading-none uppercase">Best Streak</p>
+            <p id="best-streak-val" class="font-bold text-emerald-800 leading-none mt-1">0</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Interactive Sandbox Workspace -->
+  <main class="max-w-5xl w-full mx-auto px-4 py-6 flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Left column: Main Game Card -->
+    <section class="lg:col-span-2 flex flex-col gap-4">
+      
+      <!-- Welcome / Setup Options Panel -->
+      <div id="welcome-panel" class="bg-white rounded-3xl p-6 md:p-8 shadow-xl shadow-indigo-100/50 border border-slate-100 flex flex-col justify-between h-full">
+        <div class="text-center max-w-md mx-auto my-auto space-y-6">
+          <div class="w-24 h-24 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-3xl mx-auto flex items-center justify-center shadow-lg shadow-indigo-200">
+            <span class="text-5xl">🗺️</span>
+          </div>
+          <div class="space-y-2">
+            <h2 class="text-2xl md:text-3xl playful-title text-indigo-950">Ready for the Challenge?</h2>
+            <p class="text-slate-500 text-sm md:text-base">Put your map skills to the test and master all 50 state capitals! Perfect practice for 5th-grade geography stars.</p>
+          </div>
+
+          <!-- Difficulty Selector Custom Cards -->
+          <div class="space-y-3 text-left">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Choose Your Game Mode:</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button onclick="startGame('choices')" class="group p-4 bg-indigo-50/60 hover:bg-indigo-100/80 active:bg-indigo-200 border-2 border-indigo-200/60 rounded-2xl text-left transition-all duration-200 hover:-translate-y-0.5">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-bold text-indigo-900">Multiple Choice</span>
+                  <span class="text-2xl">⚡</span>
+                </div>
+                <p class="text-xs text-indigo-600">Pick from 4 possibilities. Great for fast learning!</p>
+              </button>
+
+              <button onclick="startGame('spelling')" class="group p-4 bg-pink-50/60 hover:bg-pink-100/80 active:bg-pink-200 border-2 border-pink-200/60 rounded-2xl text-left transition-all duration-200 hover:-translate-y-0.5">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-bold text-pink-900">Spelling Wizard</span>
+                  <span class="text-2xl">✍️</span>
+                </div>
+                <p class="text-xs text-pink-600">Type the capital name yourself. Master spellchecker level!</p>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Play Card -->
+      <div id="play-panel" class="hidden bg-white rounded-3xl p-6 md:p-8 shadow-xl shadow-indigo-100/50 border border-slate-100 flex flex-col justify-between h-full relative overflow-hidden">
+        
+        <!-- Top Status Banner -->
+        <div class="flex justify-between items-center mb-6">
+          <div class="bg-indigo-50 px-3 py-1 rounded-full text-xs font-bold text-indigo-600">
+            State <span id="current-index-display">1</span> of 50
+          </div>
+          <button onclick="quitToMenu()" class="text-slate-400 hover:text-slate-600 text-xs font-bold flex items-center gap-1 transition-colors">
+            ❌ Quit Game
+          </button>
+        </div>
+
+        <!-- Interactive Quest Question -->
+        <div class="space-y-6 flex-grow flex flex-col justify-center">
+          
+          <div class="text-center space-y-4">
+            <p class="text-xs uppercase font-extrabold tracking-wider text-indigo-400">Identify the Capital Of</p>
+            <div class="relative inline-block">
+              <!-- State Title -->
+              <h3 id="question-state-name" class="text-4xl md:text-5xl playful-title text-indigo-950 tracking-wide drop-shadow-sm transition-transform duration-300">Texas</h3>
+              <div class="absolute -bottom-2 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-rose-400 to-indigo-500 rounded-full"></div>
+            </div>
+          </div>
+
+          <!-- Multiple-Choice Mode Options -->
+          <div id="multiple-choice-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+            <!-- Buttons dynamically populated by JS -->
+          </div>
+
+          <!-- Spelling Mode Interface -->
+          <div id="spelling-container" class="hidden space-y-4 mt-6 max-w-md mx-auto w-full">
+            <div class="relative">
+              <input type="text" id="spelling-input" autocomplete="off" placeholder="Type the capital here..." class="w-full px-5 py-4 border-2 border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 rounded-2xl outline-none text-lg text-center font-bold text-slate-800 transition-all placeholder:text-slate-300" onkeydown="handleSpellingKey(event)">
+              <!-- Tiny Help button -->
+              <button onclick="revealSpellingHint()" title="Reveal a letter" class="absolute right-3 top-3.5 bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-bold px-2.5 py-1.5 rounded-lg transition-colors">
+                💡 Hint
+              </button>
+            </div>
+            
+            <div class="flex justify-between items-center gap-3">
+              <span id="hint-text" class="text-xs text-slate-400 font-bold"></span>
+              <button onclick="submitSpellingAnswer()" class="bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold px-6 py-3 rounded-xl shadow-md shadow-indigo-100 transition-all flex items-center gap-2">
+                Check Answer 🚀
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Bottom Feedback Box containing Mascot and Info -->
+        <div id="feedback-bar" class="mt-8 pt-6 border-t border-slate-100 flex items-center gap-4 bg-slate-50/50 p-4 rounded-2xl">
+          <div class="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center text-2xl mascot-bounce">
+            🦉
+          </div>
+          <div class="flex-grow">
+            <p id="mascot-speech" class="text-sm font-bold text-slate-600">Hi Explorer! Select a state capital option to start scoring points.</p>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- Right column: Interactive Map Grid Progress & Rewards -->
+    <section class="flex flex-col gap-6">
+      
+      <!-- Progress Map Box -->
+      <div class="bg-white rounded-3xl p-6 shadow-xl shadow-indigo-100/50 border border-slate-100 flex-grow flex flex-col justify-between">
+        <div>
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="font-bold text-slate-900 flex items-center gap-2">
+              🧭 Adventure Progress
+            </h4>
+            <span id="progress-percentage" class="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md">0%</span>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="w-full bg-slate-100 h-3 rounded-full mb-6 overflow-hidden">
+            <div id="progress-bar-fill" class="bg-gradient-to-r from-indigo-500 to-purple-600 h-full w-0 transition-all duration-300"></div>
+          </div>
+
+          <!-- Visual US State Progress Indicator Matrix -->
+          <p class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">My State Conquests (50 States)</p>
+          <div id="state-matrix" class="grid grid-cols-10 gap-1.5 p-2 bg-slate-50 rounded-2xl border border-slate-100 max-h-56 overflow-y-auto">
+            <!-- 50 Micro Badges generated by JS -->
+          </div>
+        </div>
+
+        <!-- Reset Button -->
+        <div class="pt-4 border-t border-slate-100 mt-4 flex items-center justify-between">
+          <div class="text-left">
+            <p class="text-[10px] text-slate-400 font-bold uppercase">Total Conquered</p>
+            <p class="text-sm font-bold text-slate-700"><span id="conquered-count">0</span> / 50</p>
+          </div>
+          <button onclick="resetAllProgress()" class="text-[11px] font-bold text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition-colors">
+            🔄 Reset Data
+          </button>
+        </div>
+      </div>
+
+      <!-- Fun Facts / Learn Card -->
+      <div class="bg-gradient-to-tr from-amber-500 to-orange-600 text-white rounded-3xl p-6 shadow-xl shadow-amber-200/50 relative overflow-hidden">
+        <!-- Sunburst Background Visual Decorator -->
+        <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+        
+        <div class="relative z-10 space-y-3">
+          <div class="flex items-center gap-2 text-amber-200">
+            <span class="text-xl">💡</span>
+            <span class="text-xs font-bold uppercase tracking-wider">State Capital Fun Fact!</span>
+          </div>
+          <h5 id="fun-fact-title" class="font-bold text-lg leading-snug">Did you know?</h5>
+          <p id="fun-fact-text" class="text-sm text-amber-50/90 leading-relaxed font-medium">Alaska's capital, Juneau, is the only US capital that has no road access! You have to take a plane or a boat to get there.</p>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white/40 border-t border-slate-100 py-4 px-4 text-center text-xs text-slate-400 font-medium">
+    Designed for 5th Grade Geographers. Learn, Play, Conquer!
+  </footer>
+
+  <!-- State Capitals Data Matrix & Engine Logic -->
+  <script>
+    // Complete 50 States and Capitals dataset
+    const STATES_DATA = [
+      { name: "Alabama", capital: "Montgomery", fact: "Montgomery was the birthplace of the Civil Rights movement." },
+      { name: "Alaska", capital: "Juneau", fact: "Juneau is the only US capital with no road access; you must boat or fly there!" },
+      { name: "Arizona", capital: "Phoenix", fact: "Phoenix is the most populous state capital in the whole USA." },
+      { name: "Arkansas", capital: "Little Rock", fact: "Little Rock got its name from a small rock formation on the Arkansas River." },
+      { name: "California", capital: "Sacramento", fact: "Sacramento became a boom town during the famous Gold Rush of 1849." },
+      { name: "Colorado", capital: "Denver", fact: "Denver is exactly one mile high above sea level (5,280 feet)!" },
+      { name: "Connecticut", capital: "Hartford", fact: "Hartford is home to the oldest continuously published newspaper in the USA." },
+      { name: "Delaware", capital: "Dover", fact: "Delaware was the very first state to join the USA." },
+      { name: "Florida", capital: "Tallahassee", fact: "Tallahassee was chosen because it was midway between St. Augustine and Pensacola." },
+      { name: "Georgia", capital: "Atlanta", fact: "Atlanta has over 70 streets with the word 'Peachtree' in their name!" },
+      { name: "Hawaii", capital: "Honolulu", fact: "Honolulu means 'sheltered harbor' or 'place of shelter' in Hawaiian." },
+      { name: "Idaho", capital: "Boise", fact: "Boise's nickname is 'The City of Trees' and comes from early French explorers." },
+      { name: "Illinois", capital: "Springfield", fact: "Springfield was home to Abraham Lincoln for 24 years before he became President." },
+      { name: "Indiana", capital: "Indianapolis", fact: "Indianapolis is home to the world's largest children's museum!" },
+      { name: "Iowa", capital: "Des Moines", fact: "Des Moines is named after the Des Moines River, which means 'River of the Monks'." },
+      { name: "Kansas", capital: "Topeka", fact: "Topeka comes from a Native American word meaning 'a good place to dig wild potatoes'." },
+      { name: "Kentucky", capital: "Frankfort", fact: "Frankfort has a unique floral clock in its state capitol grounds." },
+      { name: "Louisiana", capital: "Baton Rouge", fact: "Baton Rouge means 'Red Stick' in French, named after a red boundary post." },
+      { name: "Maine", capital: "Augusta", fact: "Augusta is the easternmost state capital in the United States." },
+      { name: "Maryland", capital: "Annapolis", fact: "Annapolis is known as the Sailing Capital of America and has a rich naval history." },
+      { name: "Massachusetts", capital: "Boston", fact: "Boston is home to the first public subway system in the United States!" },
+      { name: "Michigan", capital: "Lansing", fact: "Lansing is the only state capital that is not also a county seat." },
+      { name: "Minnesota", capital: "Saint Paul", fact: "Saint Paul was originally called 'Pig's Eye' after a colorful local trader!" },
+      { name: "Mississippi", capital: "Jackson", fact: "Jackson was named after General Andrew Jackson, who later became President." },
+      { name: "Missouri", capital: "Jefferson City", fact: "Jefferson City is named after Thomas Jefferson, the 3rd US President." },
+      { name: "Montana", capital: "Helena", fact: "Helena was founded by gold miners who called themselves 'The Last Chance' crew." },
+      { name: "Nebraska", capital: "Lincoln", fact: "Lincoln is home to the only unicameral (one-house) state legislature in the US." },
+      { name: "Nevada", capital: "Carson City", fact: "Carson City is named after the famous frontier scout Kit Carson." },
+      { name: "New Hampshire", capital: "Concord", fact: "Concord is famous for producing the Concord Stagecoach used to settle the West." },
+      { name: "New Jersey", capital: "Trenton", fact: "Trenton was briefly the capital of the United States in November 1784." },
+      { name: "New Mexico", capital: "Santa Fe", fact: "Santa Fe is the highest capital city in the US, sitting at 7,199 feet above sea level." },
+      { name: "New York", capital: "Albany", fact: "Albany was settled by the Dutch and is one of the oldest surviving European cities in the US." },
+      { name: "North Carolina", capital: "Raleigh", fact: "Raleigh is known as the 'City of Oaks' for its beautiful oak trees." },
+      { name: "North Dakota", capital: "Bismarck", fact: "Bismarck has the tallest state capitol building on the Great Plains!" },
+      { name: "Ohio", capital: "Columbus", fact: "Columbus is home to the world's first co-educational college." },
+      { name: "Oklahoma", capital: "Oklahoma City", fact: "Oklahoma City is one of only two US capitals with working oil wells on its capitol grounds!" },
+      { name: "Oregon", capital: "Salem", fact: "Salem's name comes from the Hebrew word 'Shalom', which means Peace." },
+      { name: "Pennsylvania", capital: "Harrisburg", fact: "Harrisburg is famous for the Broad Street Market, one of the oldest continuously operated market houses." },
+      { name: "Rhode Island", capital: "Providence", fact: "Providence has the third-highest density of historical landmarks in the US." },
+      { name: "South Carolina", capital: "Columbia", fact: "Columbia was one of the first planned cities in the United States." },
+      { name: "South Dakota", capital: "Pierre", fact: "Pierre is the second-smallest US capital by population (only about 14,000 people!)." },
+      { name: "Tennessee", capital: "Nashville", fact: "Nashville is known worldwide as 'Music City, U.S.A.'!" },
+      { name: "Texas", capital: "Austin", fact: "Austin is home to the largest urban bat colony in North America!" },
+      { name: "Utah", capital: "Salt Lake City", fact: "Salt Lake City was founded by pioneers who traveled across the country on foot and wagon." },
+      { name: "Vermont", capital: "Montpelier", fact: "Montpelier is the only US state capital without a McDonald's!" },
+      { name: "Virginia", capital: "Richmond", fact: "Richmond was where Patrick Henry gave his famous 'Give me liberty, or give me death!' speech." },
+      { name: "Washington", capital: "Olympia", fact: "Olympia offers beautiful, clear views of the active volcano Mount Rainier." },
+      { name: "West Virginia", capital: "Charleston", fact: "Charleston's capitol dome is covered in real, shimmering 23.5-karat gold leaf!" },
+      { name: "Wisconsin", capital: "Madison", fact: "Madison is built on an isthmus, which is a narrow strip of land between two lakes." },
+      { name: "Wyoming", capital: "Cheyenne", fact: "Cheyenne hosts the world's largest outdoor rodeo and Western celebration!" }
+    ];
+
+    // State Engine Variables
+    let gameMode = 'choices'; // 'choices' or 'spelling'
+    let currentQuizIndex = 0;
+    let pool = []; // Active shuffled states
+    let score = 0;
+    let currentStreak = 0;
+    let bestStreak = 0;
+    let hintsUsed = 0;
+    let conqueredStates = JSON.parse(localStorage.getItem('capitalQuestConquered')) || {};
+
+    // Sound FX Generator using Web Audio API
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playSound(type) {
+      if (!audioCtx) return;
+      
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      const now = audioCtx.currentTime;
+      
+      if (type === 'correct') {
+        // High upbeat cheery sound
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+        osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      } else if (type === 'incorrect') {
+        // Flat buzz drop sound
+        osc.frequency.setValueAtTime(220, now); // A3
+        osc.frequency.exponentialRampToValueAtTime(110, now + 0.3); // Drop pitch
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } else if (type === 'streak') {
+        // Celebration sound for high streaks
+        osc.frequency.setValueAtTime(392, now); // G4
+        osc.frequency.setValueAtTime(523.25, now + 0.1); // C5
+        osc.frequency.setValueAtTime(659.25, now + 0.2); // E5
+        osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+        osc.start(now);
+        osc.stop(now + 0.5);
+      }
+    }
+
+    // Initialize Progress Matrix
+    function renderStateMatrix() {
+      const container = document.getElementById('state-matrix');
+      container.innerHTML = '';
+      
+      STATES_DATA.forEach((state, index) => {
+        const isConquered = conqueredStates[state.name];
+        
+        // Extract 2-letter state abbreviation
+        const stateAbbr = state.name.substring(0, 2).toUpperCase();
+        
+        const badge = document.createElement('div');
+        badge.id = `badge-${state.name.replace(/\s+/g, '')}`;
+        badge.className = `h-9 flex flex-col items-center justify-center rounded-lg text-[10px] font-bold border transition-all duration-300 cursor-help ${
+          isConquered 
+            ? 'bg-emerald-500 border-emerald-600 text-white shadow-sm scale-100' 
+            : 'bg-white border-slate-200 text-slate-400 hover:border-indigo-300'
+        }`;
+        badge.title = `${state.name} (${isConquered ? 'Conquered!' : 'Unexplored'})`;
+        badge.innerHTML = `
+          <span>${stateAbbr}</span>
+          <span class="text-[8px]">${isConquered ? '★' : '☆'}</span>
+        `;
+        container.appendChild(badge);
+      });
+
+      // Update counters
+      const totalConquered = Object.keys(conqueredStates).length;
+      document.getElementById('conquered-count').innerText = totalConquered;
+      
+      const pct = Math.round((totalConquered / 50) * 100);
+      document.getElementById('progress-percentage').innerText = `${pct}%`;
+      document.getElementById('progress-bar-fill').style.width = `${pct}%`;
+    }
+
+    // Shuffler Utility
+    function shuffleArray(arr) {
+      return arr.map(value => ({ value, sort: Math.random() }))
+                .sort((a, b) => a.sort - b.sort)
+                .map(({ value }) => value);
+    }
+
+    // Begin Play Session
+    function startGame(mode) {
+      gameMode = mode;
+      document.getElementById('welcome-panel').classList.add('hidden');
+      document.getElementById('play-panel').classList.remove('hidden');
+      
+      // Seed quiz pool with remaining states first, or all if finished
+      const unconquered = STATES_DATA.filter(s => !conqueredStates[s.name]);
+      if (unconquered.length > 0) {
+        pool = shuffleArray(unconquered);
+      } else {
+        pool = shuffleArray(STATES_DATA);
+      }
+      
+      currentQuizIndex = 0;
+      updateStreakBadge();
+      loadNextQuestion();
+    }
+
+    // Exit Game back to landing/menu
+    function quitToMenu() {
+      document.getElementById('play-panel').classList.add('hidden');
+      document.getElementById('welcome-panel').classList.remove('hidden');
+      currentStreak = 0;
+      updateStreakBadge();
+    }
+
+    // Load next state challenge
+    function loadNextQuestion() {
+      if (currentQuizIndex >= pool.length) {
+        // Finished the current batch, loop around
+        const unconquered = STATES_DATA.filter(s => !conqueredStates[s.name]);
+        pool = shuffleArray(unconquered.length > 0 ? unconquered : STATES_DATA);
+        currentQuizIndex = 0;
+      }
+
+      const activeState = pool[currentQuizIndex];
+      document.getElementById('current-index-display').innerText = currentQuizIndex + 1;
+      
+      // Update text details
+      const stateTitle = document.getElementById('question-state-name');
+      stateTitle.innerText = activeState.name;
+      
+      // Reset hints
+      hintsUsed = 0;
+      document.getElementById('hint-text').innerText = '';
+
+      // Update Mascot Speech
+      const speeches = [
+        `Let's go to ${activeState.name}! Do you know its capital?`,
+        `Next stop: ${activeState.name}! What capital sits here?`,
+        `I hear ${activeState.name} is beautiful! What's the capital?`,
+        `Can you recall the capital of ${activeState.name}? You got this!`
+      ];
+      document.getElementById('mascot-speech').innerText = speeches[Math.floor(Math.random() * speeches.length)];
+      document.getElementById('mascot-speech').className = "text-sm font-bold text-slate-600";
+
+      // Setup Inputs/Buttons depending on mode
+      if (gameMode === 'choices') {
+        document.getElementById('multiple-choice-container').classList.remove('hidden');
+        document.getElementById('spelling-container').classList.add('hidden');
+        generateMultipleChoices(activeState);
+      } else {
+        document.getElementById('multiple-choice-container').classList.add('hidden');
+        document.getElementById('spelling-container').classList.remove('hidden');
+        const input = document.getElementById('spelling-input');
+        input.value = '';
+        input.focus();
+      }
+
+      // Display fun facts on the side panel
+      document.getElementById('fun-fact-title').innerText = `${activeState.name} Fact Sheet`;
+      document.getElementById('fun-fact-text').innerText = activeState.fact;
+    }
+
+    // Render multiple choice layout
+    function generateMultipleChoices(correctState) {
+      const container = document.getElementById('multiple-choice-container');
+      container.innerHTML = '';
+
+      // Pick 3 incorrect capitals
+      const otherCapitals = STATES_DATA
+        .filter(s => s.name !== correctState.name)
+        .map(s => s.capital);
+      
+      const shuffledOthers = shuffleArray(otherCapitals).slice(0, 3);
+      const choicesList = shuffleArray([correctState.capital, ...shuffledOthers]);
+
+      choicesList.forEach((choice, index) => {
+        const btn = document.createElement('button');
+        btn.className = "p-4 bg-slate-50 hover:bg-indigo-50 border-2 border-slate-200 hover:border-indigo-300 rounded-2xl font-bold text-slate-700 hover:text-indigo-900 transition-all text-center flex items-center justify-center gap-2 transform active:scale-95";
+        btn.onclick = () => checkChoiceAnswer(choice, btn);
+        btn.innerHTML = `<span class="bg-indigo-100 text-indigo-700 text-xs w-6 h-6 rounded-full flex items-center justify-center">${index + 1}</span> <span class="text-base">${choice}</span>`;
+        container.appendChild(btn);
+      });
+    }
+
+    // Validate Selection (Multiple Choice)
+    function checkChoiceAnswer(userChoice, buttonElement) {
+      const activeState = pool[currentQuizIndex];
+      const correctCapital = activeState.capital;
+
+      // Disable other buttons so player cannot multi-click
+      const buttons = document.getElementById('multiple-choice-container').querySelectorAll('button');
+      buttons.forEach(btn => btn.disabled = true);
+
+      if (userChoice === correctCapital) {
+        // Correct Choice
+        buttonElement.className = "p-4 bg-emerald-500 border-2 border-emerald-600 rounded-2xl font-bold text-white transition-all text-center flex items-center justify-center gap-2";
+        handleAnswerSuccess(activeState);
+      } else {
+        // Incorrect Choice
+        buttonElement.className = "p-4 bg-rose-500 border-2 border-rose-600 rounded-2xl font-bold text-white transition-all text-center flex items-center justify-center gap-2 shake-anim";
+        
+        // Highlight correct button for student feedback
+        buttons.forEach(btn => {
+          if (btn.innerText.includes(correctCapital)) {
+            btn.className = "p-4 bg-emerald-100 border-2 border-emerald-400 rounded-2xl font-bold text-emerald-800 transition-all text-center flex items-center justify-center gap-2";
+          }
+        });
+        handleAnswerFailure(activeState);
+      }
+
+      // Progress to next after a delay for visual confirmation
+      setTimeout(() => {
+        currentQuizIndex++;
+        loadNextQuestion();
+      }, 1600);
+    }
+
+    // Handle Spelling Submission
+    function handleSpellingKey(e) {
+      if (e.key === 'Enter') {
+        submitSpellingAnswer();
+      }
+    }
+
+    function revealSpellingHint() {
+      const correctCapital = pool[currentQuizIndex].capital;
+      hintsUsed++;
+      
+      const hintSpan = document.getElementById('hint-text');
+      if (hintsUsed === 1) {
+        hintSpan.innerText = `Starts with letter: "${correctCapital[0]}" (Total ${correctCapital.length} letters)`;
+      } else if (hintsUsed === 2) {
+        hintSpan.innerText = `Pattern: ${correctCapital.split('').map((char, idx) => idx === 0 || char === ' ' ? char : '_').join(' ')}`;
+      } else {
+        hintSpan.innerText = `Secret: It rhymes with something like... "${correctCapital.substring(1)}"`;
+      }
+    }
+
+    function submitSpellingAnswer() {
+      const activeState = pool[currentQuizIndex];
+      const correctCapital = activeState.capital;
+      const userInput = document.getElementById('spelling-input').value.trim();
+
+      if (!userInput) return;
+
+      // Make matching robust against minor spacing and case errors
+      const normalizedInput = userInput.toLowerCase().replace(/\s+/g, '');
+      const normalizedCorrect = correctCapital.toLowerCase().replace(/\s+/g, '');
+
+      const isCorrect = normalizedInput === normalizedCorrect;
+      const card = document.getElementById('play-panel');
+
+      if (isCorrect) {
+        document.getElementById('spelling-input').className = "w-full px-5 py-4 border-2 border-emerald-500 bg-emerald-50 focus:ring-4 focus:ring-emerald-100 rounded-2xl outline-none text-lg text-center font-bold text-emerald-800 transition-all";
+        handleAnswerSuccess(activeState);
+        setTimeout(() => {
+          document.getElementById('spelling-input').className = "w-full px-5 py-4 border-2 border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 rounded-2xl outline-none text-lg text-center font-bold text-slate-800 transition-all placeholder:text-slate-300";
+          currentQuizIndex++;
+          loadNextQuestion();
+        }, 1600);
+      } else {
+        document.getElementById('spelling-input').className = "w-full px-5 py-4 border-2 border-rose-500 bg-rose-50 focus:ring-4 focus:ring-rose-100 rounded-2xl outline-none text-lg text-center font-bold text-rose-800 transition-all shake-anim";
+        handleAnswerFailure(activeState);
+        
+        // Show correct answer after failure so the kid learns
+        const speechBar = document.getElementById('mascot-speech');
+        speechBar.innerText = `Whoops! The capital of ${activeState.name} is ${activeState.capital}. Practice makes perfect!`;
+        speechBar.className = "text-sm font-bold text-rose-600";
+        
+        setTimeout(() => {
+          document.getElementById('spelling-input').className = "w-full px-5 py-4 border-2 border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 rounded-2xl outline-none text-lg text-center font-bold text-slate-800 transition-all placeholder:text-slate-300";
+          currentQuizIndex++;
+          loadNextQuestion();
+        }, 3200);
+      }
+    }
+
+    // Success Sequence
+    function handleAnswerSuccess(state) {
+      playSound('correct');
+      
+      // Calculate score points (fewer if hints are used)
+      let points = 100;
+      if (hintsUsed > 0) points = Math.max(20, points - (hintsUsed * 30));
+      
+      score += points;
+      document.getElementById('score-val').innerText = score;
+
+      currentStreak++;
+      document.getElementById('streak-val').innerText = currentStreak;
+
+      if (currentStreak > bestStreak) {
+        bestStreak = currentStreak;
+        document.getElementById('best-streak-val').innerText = bestStreak;
+        if (currentStreak > 2) {
+          playSound('streak');
+          startConfettiBurst();
+        }
+      }
+
+      updateStreakBadge();
+
+      // Save progress
+      conqueredStates[state.name] = true;
+      localStorage.setItem('capitalQuestConquered', JSON.stringify(conqueredStates));
+      renderStateMatrix();
+
+      // Mascot Cheering
+      const positiveCheers = [
+        "Boom! You got it right! 🎉",
+        "Sensational geography knowledge! ⭐",
+        "Wow! You're a certified genius! 🚀",
+        "Absolutely correct! Keep this hot streak alive!"
+      ];
+      const speechBar = document.getElementById('mascot-speech');
+      speechBar.innerText = positiveCheers[Math.floor(Math.random() * positiveCheers.length)];
+      speechBar.className = "text-sm font-bold text-emerald-600";
+    }
+
+    // Failure Sequence
+    function handleAnswerFailure(state) {
+      playSound('incorrect');
+      currentStreak = 0;
+      document.getElementById('streak-val').innerText = currentStreak;
+      updateStreakBadge();
+
+      const negativePrompts = [
+        `So close! Don't give up!`,
+        `Oh! That was a tricky one.`,
+        `That's okay, learning is all about trial and error!`,
+        `Keep trying! Let's conquer the next one!`
+      ];
+      const speechBar = document.getElementById('mascot-speech');
+      speechBar.innerText = negativePrompts[Math.floor(Math.random() * negativePrompts.length)] + ` (Capital is ${state.capital})`;
+      speechBar.className = "text-sm font-bold text-amber-600";
+    }
+
+    // Update the visual representation of streak multiplier
+    function updateStreakBadge() {
+      const badge = document.getElementById('streak-badge');
+      if (currentStreak >= 3) {
+        badge.classList.remove('opacity-50', 'scale-95');
+        badge.classList.add('opacity-100', 'scale-105', 'shadow-md', 'shadow-rose-100');
+      } else {
+        badge.classList.remove('opacity-100', 'scale-105', 'shadow-md', 'shadow-rose-100');
+        badge.classList.add('opacity-50', 'scale-95');
+      }
+    }
+
+    // Reset game completely
+    function resetAllProgress() {
+      conqueredStates = {};
+      localStorage.removeItem('capitalQuestConquered');
+      score = 0;
+      currentStreak = 0;
+      bestStreak = 0;
+      document.getElementById('score-val').innerText = score;
+      document.getElementById('streak-val').innerText = currentStreak;
+      document.getElementById('best-streak-val').innerText = bestStreak;
+      updateStreakBadge();
+      renderStateMatrix();
+      quitToMenu();
+    }
+
+    /* ----------------------------------------------------
+       CONFETTI PARTICLE ENGINE (Plain JS Canvas)
+    ---------------------------------------------------- */
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    let confettiActive = false;
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function createConfettiParticle() {
+      return {
+        x: Math.random() * canvas.width,
+        y: -10 - Math.random() * 20,
+        r: Math.random() * 6 + 4,
+        color: `hsl(${Math.random() * 360}, 90%, 60%)`,
+        vx: Math.random() * 4 - 2,
+        vy: Math.random() * 5 + 4,
+        angle: Math.random() * 360,
+        spin: Math.random() * 0.2 - 0.1
+      };
+    }
+
+    function startConfettiBurst() {
+      // Seed particles
+      for (let i = 0; i < 60; i++) {
+        particles.push(createConfettiParticle());
+      }
+      if (!confettiActive) {
+        confettiActive = true;
+        animateConfetti();
+      }
+    }
+
+    function animateConfetti() {
+      if (!confettiActive) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.angle += p.spin;
+
+        // Draw particle
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle * Math.PI / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.r, -p.r, p.r * 2, p.r * 2);
+        ctx.restore();
+
+        // Remove if off screen
+        if (p.y > canvas.height) {
+          particles.splice(i, 1);
+        }
+      }
+
+      if (particles.length > 0) {
+        requestAnimationFrame(animateConfetti);
+      } else {
+        confettiActive = false;
+      }
+    }
+
+    // Init App State On Window Load
+    window.onload = function() {
+      renderStateMatrix();
+    }
+  </script>
+</body>
+</html>
